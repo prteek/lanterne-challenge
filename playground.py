@@ -2,10 +2,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import plotly.express as px
-from sklearn.preprocessing import SplineTransformer
-from hulearn.experimental import parallel_coordinates
-
 
 
 
