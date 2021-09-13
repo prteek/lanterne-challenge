@@ -1,0 +1,17 @@
+# Working env
+python-dotenv
+
+
+# Analysis
+scipy
+numpy
+pandas
+#scikit-learn
+
+
+# plotting
+seaborn
+matplotlib
+streamlit
+plotly
+
