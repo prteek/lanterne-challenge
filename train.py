@@ -65,9 +65,9 @@ if __name__ == '__main__':
     rss.fit(X,y)
     
     
-    print('Mean squared error', -cross_val_score(pipeline, X, y, scoring='neg_mean_squared_error'))
+    print('Mean squared error', -rss.best_score_)
         
-    joblib.dump(pipeline, 'model.mdl')
+    joblib.dump(rss, 'model.mdl')
           
     
     
