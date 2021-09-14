@@ -5,10 +5,13 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import FunctionTransformer as FT
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import PoissonRegressor
-from sklearn.model_selection import GridSearchCV, cross_val_score
+from sklearn.linear_model import PoissonRegressor, Ridge, Lasso
+from sklearn.model_selection import RandomizedSearchCV, cross_val_score
+from scipy.stats import uniform, randint, loguniform
 from sklearn.metrics import mean_squared_error, mean_poisson_deviance
 import joblib
+from sklearn.preprocessing import SplineTransformer
+from sklearn.ensemble import RandomForestRegressor, HistGradientBoostingRegressor
 
 
 
@@ -31,29 +34,39 @@ if __name__ == '__main__':
     
     target = 'demand'
     
-    X = df_train.drop(target, axis=1)
-    y = df_train[target]
+    X = df_train.query("demand>0").drop(target, axis=1)
+    y = df_train.query("demand>0")[target]
     # Need to drop columns identified non informative in eda
     columns_to_drop = ['tourist_attractions', 'secondary_connectivity']
     drop_columns = ColumnTransformer([('drop_columns', 'drop', columns_to_drop)], remainder='passthrough') 
     
     # Can use PCA since many columns are integral and not all of them will be informative
-    pca = PCA(n_components=0.95) # Arbitrarily pick threshold 0.95
+    pca = PCA(n_components=0.95, whiten=True) # Arbitrarily pick threshold 0.95
     
-    model = PoissonRegressor() # We can treat the problem as Poisson regression since demand is an integer per 4 hour interval i.e. rate of an event
+    model = PoissonRegressor(max_iter=200) # We can treat the problem as Poisson regression since demand is an integer per 4 hour interval i.e. rate of an event
+    
+    model = Lasso()
     
     pipeline = Pipeline([('time_preprocessing', FT(add_hour_day_of_week)),
                         ('drop_redundant_columns', drop_columns),
                         ('pca', pca),
+                        ('splie_transform', SplineTransformer()),
                         ('model', model)])
     
     
+    rss = RandomizedSearchCV(pipeline, {'model__alpha': loguniform(0.001,10), 'pca':[pca, None]}, 
+                             n_iter=100, 
+                             scoring=['neg_mean_squared_error', 'neg_mean_poisson_deviance'], 
+                             refit='neg_mean_squared_error', 
+                             cv=5, 
+                             verbose=9,
+                            n_jobs=-1)
+    
+    rss.fit(X,y)
+    
     
     print('Mean squared error', -cross_val_score(pipeline, X, y, scoring='neg_mean_squared_error'))
-    
-          
-    pipeline.fit(X,y)
-    
+        
     joblib.dump(pipeline, 'model.mdl')
           
     
