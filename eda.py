@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import altair as alt
-from dabl import clean, plot, detect_types
+from dabl import clean, plot, detect_types, EasyPreprocessor, SimpleRegressor
 from dabl.plot import *
 import sweetviz as sv
 
@@ -71,4 +71,16 @@ if __name__ == "__main__":
     1. Weekends appear busier (Saturday [5] and Sunday [6])
     2. Afternoon and evening hours are busier than mornings
     """
+    
+    # Some exploratory modelling 
+    ep = EasyPreprocessor()
+    X = ep.fit_transform(df_clean.drop('demand', axis=1))
+    y = df_clean['demand'].values
+
+    reg = SimpleRegressor()
+    
+    reg.fit(X,y)
+
+    """R2 is so poor that if the model was a human it'd be Jon Snow"""
+    
     
