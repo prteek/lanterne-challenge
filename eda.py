@@ -81,6 +81,7 @@ if __name__ == "__main__":
     
     reg.fit(X,y)
 
-    """R2 is so poor that if the model was a human it'd be Jon Snow"""
+    """R2 is so poor that if the model was a human it'd be Jon Snow. 
+    And that is despite the zeros included in the data"""
     
     
