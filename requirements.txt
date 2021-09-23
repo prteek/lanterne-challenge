@@ -6,7 +6,9 @@ python-dotenv
 scipy
 numpy
 pandas
-#scikit-learn
+scikit-learn
+dabl
+sweetviz
 
 
 # plotting
