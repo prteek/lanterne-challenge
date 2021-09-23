@@ -18,11 +18,13 @@ if __name__ == "__main__":
     """Observations from full report:
     1. tourist_attraction and secondary_connectivity are redundant
     2. There are over whelmingly high number of zeros in demand
+    3. We need to look at the data in a comparative sense where only positive demand data is assessed against full data
     
     """
     
-    report_positive_demand = sv.analyze(df_train.query("demand > 0"), target_feat='demand')
-    report_positive_demand.show_html(layout='vertical', filepath='report_positive_demand.html')
+    comparative_report = sv.compare([df_train, 'full'], [df_train.query("demand>0"), 'positive_demand'], target_feat='demand')
+    
+    comparative_report.show_html(layout='vertical', filepath='report_comparative.html')
     
     
     
