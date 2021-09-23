@@ -12,18 +12,7 @@ from sklearn.metrics import mean_squared_error, mean_poisson_deviance
 import joblib
 from sklearn.preprocessing import SplineTransformer
 from sklearn.ensemble import RandomForestRegressor, HistGradientBoostingRegressor
-
-
-
-def add_hour_day_of_week(df):
-    """Add hour and day of week from timestamp column and drop timestamp"""
-    X = df.copy()
-    X['timestamp'] = pd.to_datetime(X['timestamp'])
-    X['hour'] = X['timestamp'].apply(lambda x: x.hour)
-    X['day_of_week'] = X['timestamp'].apply(lambda x: x.day_of_week)
-    X.drop('timestamp', axis=1, inplace=True)
-    
-    return X
+from eda import add_hour_day_of_week
 
 
 
