@@ -4,7 +4,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import altair as alt
 from dabl import clean, plot, detect_types, EasyPreprocessor, SimpleRegressor
-from dabl.plot import *
 import sweetviz as sv
 
 
@@ -79,9 +78,11 @@ if __name__ == "__main__":
 
     reg = SimpleRegressor()
     
-    reg.fit(X,y)
+    reg.fit(df_clean,target_col='demand')
+    
+    explain(reg, X_val=df_clean, target_col='demand')
 
-    """R2 is so poor that if the model was a human it'd be Jon Snow. 
+    """model is so poor that if it was a human it'd be Jon Snow. 
     And that is despite the zeros included in the data"""
     
     
