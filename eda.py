@@ -38,6 +38,7 @@ if __name__ == "__main__":
     """ Observations from comparative report of positive demand vs full range of demand values:
     1. The characteristics of positive demand values across variables look very similar to full range of demand values
     2. Because there are so many zeros in demand, they are wel distributed across range of values on other variables and do not introduce skewnes in data
+    4. We can keep the data along with zeros for any further analysis since removing them does not change the nature of relationships with demand significantly
     3. tourist_attraction and secondary_connectivity are non informative columns
     """
     
@@ -46,5 +47,28 @@ if __name__ == "__main__":
     print(df_train.shape, df_clean.shape)
     
     """After cleaning the 2 non informative columns have been dropped"""
+ 
+    # Add hour of day and day of week
+    df_clean = add_hour_day_of_week(df_clean)
     
+    chart = (alt
+             .Chart(df_clean
+                    .groupby(['hour', 'day_of_week'])
+                    .agg({'demand':'mean'})
+                    .reset_index()
+                   )
+             .mark_rect()
+             .encode(x='hour:O', 
+                     y='day_of_week:O', 
+                     color='demand:Q', 
+                     tooltip=['hour:Q', 'day_of_week:Q', 'demand:Q'])
+             .interactive()
+            )
+    
+    chart
+    
+    """Observations from hour of day and day of week
+    1. Weekends appear busier (Saturday [5] and Sunday [6])
+    2. Afternoon and evening hours are busier than mornings
+    """
     
