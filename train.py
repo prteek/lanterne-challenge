@@ -51,11 +51,10 @@ if __name__ == '__main__':
     # Can use PCA since many columns are integral and not all of them will be informative
     pca = PCA(n_components=0.95) # Arbitrarily pick threshold 0.95
     
-    model = ZIPRegressor(zip_threshold=0.8, max_iter=1000) # We can treat the problem as Poisson regression since demand is an integer per 4 hour interval i.e. rate of an event
+    model = ZIPRegressor(zip_threshold=0.6, max_iter=1000) # We can treat the problem as Poisson regression since demand is an integer per 4 hour interval i.e. rate of an event
         
     pipeline = Pipeline([('time_preprocessing', FT(add_hour_day_of_week)),
                         ('drop_redundant_columns', drop_columns),
-                         ('spline', SplineTransformer()),
                         ('pca', pca), 
                          ('scaler', StandardScaler()),
                         ('model', model)])
@@ -63,7 +62,7 @@ if __name__ == '__main__':
     
     rss = RandomizedSearchCV(pipeline, {'model__zip_threshold': beta(8,2), 'pca':[pca]}, 
                              n_iter=100, 
-                             scoring=['neg_mean_squared_error'], 
+                             scoring=['neg_mean_squared_error', 'r2'], 
                              refit='neg_mean_squared_error', 
                              cv=5, 
                              verbose=9,
