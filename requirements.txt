@@ -9,6 +9,7 @@ pandas
 scikit-learn
 dabl
 sweetviz
+pymc3
 
 
 # plotting

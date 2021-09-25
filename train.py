@@ -14,20 +14,24 @@ from sklearn.preprocessing import SplineTransformer
 from eda import add_hour_day_of_week
 from sklearn.base import BaseEstimator, TransformerMixin
 from dabl import clean, explain
+import pymc3 as pm
+
 
 class ZIPRegressor(BaseEstimator, TransformerMixin):
-    def __init__(self, zip_threshold=0, **kwargs):
-        self.zip_threshold = zip_threshold
-        self.model = PoissonRegressor(**kwargs)
     
     def fit(self, X,y):
-        Xt = X[y>0]
-        yt = y[y>0]
-        self.model.fit(Xt,yt)
+        with pm.Model() as ZIP_reg:
+            phi = pm.Beta('phi', 1,1)
+            alpha = pm.Normal('alpha', 0,10)
+            beta = pm.Normal('beta',0,10,shape=X.shape[1])
+            theta = pm.math.exp(alpha+X@beta)
+            y1=pm.ZeroInflatedPoisson('y1', phi,theta,observed=y)
+            self.trace_zip_reg=pm.sample(1000)
+
         return self
     
     def predict(self,X,y=None):
-        prediction = (np.random.random() >= self.zip_threshold)*self.model.predict(X)
+        prediction = np.mean(np.exp(self.trace_zip_reg['alpha'].T + Xt@self.trace_zip_reg['beta'].T), axis=1)
         return prediction
         
         
@@ -49,29 +53,17 @@ if __name__ == '__main__':
     # Can use PCA since many columns are integral and not all of them will be informative
     pca = PCA(n_components=0.95) # Arbitrarily pick threshold 0.95
     
-    model = ZIPRegressor(zip_threshold=0.6, max_iter=1000) # We can treat the problem as Poisson regression since demand is an integer per 4 hour interval i.e. rate of an event
-        
+    model = ZIPRegressor() # We can treat the problem as Poisson regression since demand is an integer per 4 hour interval i.e. rate of an event
+
     pipeline = Pipeline([('time_preprocessing', FT(add_hour_day_of_week)),
                         ('drop_redundant_columns', drop_columns),
                         ('pca', pca), 
                          ('scaler', StandardScaler()),
                         ('model', model)])
     
-    
-    rss = RandomizedSearchCV(pipeline, {'model__zip_threshold': beta(8,2), 'pca':[pca]}, 
-                             n_iter=100, 
-                             scoring=['neg_mean_squared_error', 'r2'], 
-                             refit='neg_mean_squared_error', 
-                             cv=5, 
-                             verbose=9,
-                            n_jobs=-1)
-    
-    rss.fit(X,y)
-    
-    
-    print('Mean squared error', -rss.best_score_)
-        
-    joblib.dump(rss, 'model.mdl')
+    pipeline.fit(X,y)
+           
+    joblib.dump(pipeline, 'model.mdl')
 
     
     
